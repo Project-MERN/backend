@@ -28,25 +28,58 @@ app.get("/",(req,res)=> {
 
 app.post("/register-data",async(req,res) => {
     try {
-        const {name,email,password} = req.body;
-        var userId = await getNextuserSequenceValue('user_id');
-        data = {
-            name,email,password
+        const { name, email, password } = req.body;
+        const emailExists = await User.findOne({ email })
+        if (emailExists===null) {
+                    var userId = await getNextuserSequenceValue("user_id");
+                    data = {
+                      name,
+                      email,
+                      password,
+                    };
+                    const newUser = new User({
+                      id: "user" + userId,
+                      name: name,
+                      email: email,
+                      password: password,
+                      recentlyViewd: null,
+                      cart: null,
+                      enrolled: null,
+                    });
+            await newUser.save();
+            res.json({ "result": "Registered" })
         }
-        const newUser = new User({
-            id: "user" + userId,
-            name: name,
-            email:email,
-            password:password,
-            recentlyViewd: null,
-            cart: null,
-            enrolled: null,
-        })
-        await newUser.save();
+        else if(emailExists!==null) {
+            res.json({"result":"Not Registered","error":"Email Already Registered"})
+        }
+
     }
     catch(e) {
         console.log(e);
     }
+})
+
+app.post("/login-data", async (req, res) => {
+    try {
+            const { email, password } = req.body;
+            const emailExists = await User.findOne({ email });
+            if (emailExists === null) {
+              res.json({ loginStatus: "Failed", error: "Not Registered" });
+            } else if (emailExists !== null) {
+              if (password === emailExists.password) {
+                res.json({ loginStatus: "Success", id: emailExists._id });
+              } else {
+                res.json({
+                  loginStatus: "Failed",
+                  error: "Password Incorrect",
+                });
+              }
+            }
+    } catch (error) {
+        res.json({status:400})
+    }
+
+    
 })
 
 app.get("/user-data",async(req,res) => {
