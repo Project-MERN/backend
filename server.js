@@ -6,6 +6,8 @@ const userschema = require("./Database/userSchema");
 const userSequenceSchema =require("./Database/userSequenceSchema");
 
 const app = express();
+
+app.use(express.static(__dirname))
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(cors());
@@ -18,6 +20,10 @@ const UserSequence = mongoose.model('UserSequence', userSequenceSchema);
 
 app.listen(5000,()=> {
     console.log("Server started in port 5000");
+})
+
+app.get("/",(req,res)=> {
+    res.sendFile("/backend/index.html");
 })
 
 app.post("/register-data",async(req,res) => {
