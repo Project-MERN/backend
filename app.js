@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -6,6 +7,7 @@ const userschema = require("./Database/userSchema");
 const userSequenceSchema =require("./Database/userSequenceSchema");
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 app.use(express.static(__dirname))
 app.use(bodyParser.urlencoded({extended:true}));
@@ -18,8 +20,8 @@ const User =  mongoose.model("Users",userschema);
 const UserSequence = mongoose.model('UserSequence', userSequenceSchema);
 
 
-app.listen(5000,()=> {
-    console.log("Server started in port 5000");
+app.listen(PORT,()=> {
+    console.log("Server started in "+PORT);
 })
 
 app.get("/",(req,res)=> {
@@ -96,7 +98,7 @@ app.get("/user-data",async(req,res) => {
 
 const main = async() => {
     try {
-        mongoose.connect("mongodb+srv://rohithchanda7:Rohith1034@cluster0.wcwln0e.mongodb.net/?retryWrites=true&w=majority");
+        mongoose.connect(process.env.MONGO_URL);
         console.log("Connected to database");
     }
     catch (error) {
