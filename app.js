@@ -61,7 +61,7 @@ app.post("/register-data",async(req,res) => {
     }
 })
 
-app.post("/trainer-register-data",async(req,res) => {
+app.get("/trainer-register-data",async(req,res) => {
     res.send("Say hi");
 })
 
