@@ -87,7 +87,7 @@ app.post("/login-data", async (req, res) => {
 app.get("/user-data",async(req,res) => {
     try {
         var foundItems = await User.find({});
-        foundItems = JSON.stringify(foundItems);
+        // foundItems = JSON.stringify(foundItems);
         res.json(foundItems);
     }
     catch (error) {
