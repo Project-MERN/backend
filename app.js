@@ -61,6 +61,10 @@ app.post("/register-data",async(req,res) => {
     }
 })
 
+app.post("/trainer-register-data",async(req,res) => {
+    res.send("Say hi");
+})
+
 app.post("/login-data", async (req, res) => {
     try {
             const { email, password } = req.body;
