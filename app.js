@@ -91,15 +91,6 @@ app.post("/trainer-register-data", async (req, res) => {
     }
 })
 
-app.get("/trainer-data",async(req,res) => {
-    try {
-        var foundItems = await Trainer.find({});
-        res.json(foundItems);
-    }
-    catch (error) {
-        console.log(error);
-    }
-})
 
 app.post("/login-data", async (req, res) => {
     try {
@@ -120,20 +111,31 @@ app.post("/login-data", async (req, res) => {
     } catch (error) {
         res.json({ status: 400 })
     }
-
-
 })
 
-app.get("/user-data", async (req, res) => {
+app.post("/login-trainer-data",async(req,res) => {
     try {
-        var foundItems = await User.find({});
-        // foundItems = JSON.stringify(foundItems);
-        res.json(foundItems);
+        const { email, password } = req.body;
+        const emailExists = await Trainer.findOne({ email });
+        if (emailExists === null) {
+            res.json({ loginStatus: "Failed", error: "Not Registered" });
+        }
+        else if (emailExists !== null) {
+            if (password === emailExists.password) {
+                res.json({ loginStatus: "Success", id: emailExists._id });
+            } else {
+                res.json({
+                    loginStatus: "Failed",
+                    error: "Password Incorrect",
+                });
+            }
+        }
     }
-    catch (error) {
-        console.log(error);
+    catch(error) {
+        console.log(error)
     }
 })
+
 
 
 const main = async () => {
