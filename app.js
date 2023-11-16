@@ -136,6 +136,17 @@ app.post("/login-trainer-data",async(req,res) => {
     }
 })
 
+app.post("/courses",async(req,res) => {
+    try {
+        const courseCollection = await mongoose.connection.collection("courses");
+        const foundItems = await courseCollection.find({}).toArray();
+        res.json(foundItems);
+    }
+    catch (error) {
+        console.log(error);
+    }
+})
+
 
 
 const main = async () => {
