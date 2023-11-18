@@ -147,6 +147,18 @@ app.post("/courses",async(req,res) => {
     }
 })
 
+app.post("/courses/:courseID",async (req,res) => {
+    const courseCollection = await mongoose.connection.collection("courses");
+    let courseId = req.params.courseID;
+    courseId = parseInt(courseId, 10);
+    const courseItems = await courseCollection.findOne({ id: courseId });
+    if (courseItems) {
+        res.json(courseItems);
+    }
+    else {
+        res.json("No data found");
+    }
+})
 
 
 const main = async () => {
