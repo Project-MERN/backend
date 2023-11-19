@@ -8,6 +8,7 @@ const userSequenceSchema = require("./Database/userSequenceSchema");
 const trainerSchema = require("./Database/trainerSchema");
 const trainerSequenceSchema = require("./Database/trainerSequenceSchema");
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -122,7 +123,7 @@ app.post("/login-trainer-data",async(req,res) => {
         }
         else if (emailExists !== null) {
             if (password === emailExists.password) {
-                res.json({ loginStatus: "Success", id: emailExists._id });
+                res.json({ loginStatus: "Success", id: emailExists._id, });
             } else {
                 res.json({
                     loginStatus: "Failed",
@@ -160,6 +161,17 @@ app.post("/courses/:courseID",async (req,res) => {
     }
 })
 
+app.get("/user/:userId",async(req,res) => {
+    const userId = req.params.userId;
+    const userCollection = await mongoose.connection.collection("users");
+    const userItems = await userCollection.findOne({ _id: new mongoose.Types.ObjectId(userId)});
+    if (userItems) {
+        res.json(userItems);
+    }
+    else {
+        res.json("No data found");
+    }
+})
 
 const main = async () => {
     try {
