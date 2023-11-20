@@ -164,17 +164,21 @@ app.post("/courses/:courseID",async (req,res) => {
 app.post("/wishlistData",async(req,res) => {
     try {
         const wishlistdata = req.body;
-        console.log(wishlistdata.courserId);
+        const courseID = wishlistdata.courserId;
         const foundData = await User.findOne(new mongoose.Types.ObjectId(wishlistdata.userId));
-        await foundData.updateOne({ $push: { cart: wishlistdata.courserId } });
-        console.log(foundData);
+        if (foundData.cart.includes(courseID)) {
+            console.log("alredy exist");
+        }
+        else {
+            await foundData.updateOne({ $push: { cart: wishlistdata.courserId } });
+        }
     }
     catch (error) {
         console.log(error);
     }
 })
 
-app.get("/user/:userId",async(req,res) => {
+app.post("/user/:userId",async(req,res) => {
     const userId = req.params.userId;
     const userCollection = await mongoose.connection.collection("users");
     const userItems = await userCollection.findOne({ _id: new mongoose.Types.ObjectId(userId)});
