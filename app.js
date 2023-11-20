@@ -48,9 +48,9 @@ app.post("/register-data", async (req, res) => {
                 name: name,
                 email: email,
                 password: password,
-                recentlyViewd: null,
-                cart: null,
-                enrolled: null,
+                recentlyViewd: [],
+                cart: [],
+                enrolled: [],
             });
             await newUser.save();
             res.json({ "result": "Registered" })
@@ -158,6 +158,19 @@ app.post("/courses/:courseID",async (req,res) => {
     }
     else {
         res.json("No data found");
+    }
+})
+
+app.post("/wishlistData",async(req,res) => {
+    try {
+        const wishlistdata = req.body;
+        console.log(wishlistdata.courserId);
+        const foundData = await User.findOne(new mongoose.Types.ObjectId(wishlistdata.userId));
+        await foundData.updateOne({ $push: { cart: wishlistdata.courserId } });
+        console.log(foundData);
+    }
+    catch (error) {
+        console.log(error);
     }
 })
 
