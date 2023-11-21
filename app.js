@@ -101,7 +101,7 @@ app.post("/login-data", async (req, res) => {
             res.json({ loginStatus: "Failed", error: "Not Registered" });
         } else if (emailExists !== null) {
             if (password === emailExists.password) {
-                res.json({ loginStatus: "Success", id: emailExists._id });
+                res.json({ loginStatus: "Success", id: emailExists.id,_id:emailExists._id });
             } else {
                 res.json({
                     loginStatus: "Failed",
@@ -123,7 +123,11 @@ app.post("/login-trainer-data",async(req,res) => {
         }
         else if (emailExists !== null) {
             if (password === emailExists.password) {
-                res.json({ loginStatus: "Success", id: emailExists._id, });
+                res.json({
+                  loginStatus: "Success",
+                  id: emailExists.id,
+                  _id: emailExists._id,
+                });
             } else {
                 res.json({
                     loginStatus: "Failed",
