@@ -81,7 +81,7 @@ app.post("/trainer-register-data", async (req, res) => {
                 name: name,
                 email: email,
                 password: password,
-                course: null
+                course: []
             });
             await newTrainer.save();
             res.json({ "result": "Registered" })
