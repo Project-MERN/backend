@@ -328,7 +328,7 @@ async function getNexttrainerSequenceValue(collectionName) {
     return sequenceDocument.seq;
 }
 
-<<<<<<< HEAD
+
 async function getNextCourseSequenceValue(collectionName) {
     const sequenceDocument = await CourseSequence.findOneAndUpdate(
         { _id: collectionName },
@@ -340,6 +340,3 @@ async function getNextCourseSequenceValue(collectionName) {
 }
 
 main();
-=======
-main();
->>>>>>> cb708febe4d5bc5d93711f9cc7e830bc2d8a657e
