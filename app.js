@@ -7,6 +7,8 @@ const userschema = require("./Database/userSchema");
 const userSequenceSchema = require("./Database/userSequenceSchema");
 const trainerSchema = require("./Database/trainerSchema");
 const trainerSequenceSchema = require("./Database/trainerSequenceSchema");
+const courseSchema = require("./Database/CourseSchema");
+const courseSequenceSchema  = require("./Database/CourseSequenceSchema");
 
 
 const app = express();
@@ -23,6 +25,8 @@ const User = mongoose.model("Users", userschema);
 const UserSequence = mongoose.model('UserSequence', userSequenceSchema);
 const Trainer = mongoose.model("Trainers", trainerSchema);
 const TrainerSequence = mongoose.model("TrainerSequence", trainerSequenceSchema);
+const Courses = mongoose.model("courses",courseSchema);
+const CourseSequence = mongoose.model("Courses",courseSequenceSchema);
 
 app.listen(PORT, () => {
     console.log("Server started in " + PORT);
@@ -101,7 +105,7 @@ app.post("/login-data", async (req, res) => {
             res.json({ loginStatus: "Failed", error: "Not Registered" });
         } else if (emailExists !== null) {
             if (password === emailExists.password) {
-                res.json({ loginStatus: "Success", id: emailExists.id,_id:emailExists._id });
+                res.json({ loginStatus: "Success", id: emailExists.id, _id: emailExists._id });
             } else {
                 res.json({
                     loginStatus: "Failed",
@@ -114,7 +118,7 @@ app.post("/login-data", async (req, res) => {
     }
 })
 
-app.post("/login-trainer-data",async(req,res) => {
+app.post("/login-trainer-data", async (req, res) => {
     try {
         const { email, password } = req.body;
         const emailExists = await Trainer.findOne({ email });
@@ -124,9 +128,9 @@ app.post("/login-trainer-data",async(req,res) => {
         else if (emailExists !== null) {
             if (password === emailExists.password) {
                 res.json({
-                  loginStatus: "Success",
-                  id: emailExists.id,
-                  _id: emailExists._id,
+                    loginStatus: "Success",
+                    id: emailExists.id,
+                    _id: emailExists._id,
                 });
             } else {
                 res.json({
@@ -136,12 +140,12 @@ app.post("/login-trainer-data",async(req,res) => {
             }
         }
     }
-    catch(error) {
+    catch (error) {
         console.log(error)
     }
 })
 
-app.post("/courses",async(req,res) => {
+app.post("/courses", async (req, res) => {
     try {
         const courseCollection = await mongoose.connection.collection("courses");
         const foundItems = await courseCollection.find({}).toArray();
@@ -152,7 +156,7 @@ app.post("/courses",async(req,res) => {
     }
 })
 
-app.post("/courses/:courseID",async (req,res) => {
+app.post("/courses/:courseID", async (req, res) => {
     const courseCollection = await mongoose.connection.collection("courses");
     let courseId = req.params.courseID;
     courseId = parseInt(courseId, 10);
@@ -165,7 +169,7 @@ app.post("/courses/:courseID",async (req,res) => {
     }
 })
 
-app.post("/wishlistData",async(req,res) => {
+app.post("/wishlistData", async (req, res) => {
     try {
         const wishlistdata = req.body;
         const courseID = wishlistdata.courserId;
@@ -182,10 +186,37 @@ app.post("/wishlistData",async(req,res) => {
     }
 })
 
-app.post("/user/:userId",async(req,res) => {
+
+
+app.post("/Registered", async (req, res) => {
+    try {
+        var registerArray = [];
+        const registerdata = req.body;
+        const UserData = await User.findOne(new mongoose.Types.ObjectId(registerdata.userId));
+        const cartData = UserData.enrolled;
+        for (let i = 0; i < cartData.length; i++) {
+            try {
+                const courseCollection = await mongoose.connection.collection("courses");
+                let courseId = cartData[i];
+                courseId = parseInt(courseId, 10);
+                const courseData = await courseCollection.findOne({ id: courseId });
+                registerArray.push(courseData);
+            } catch (error) {
+                console.error("Error fetching course data:", error.message);
+            }
+        }
+        res.json(registerArray)
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+})
+
+app.post("/user/:userId", async (req, res) => {
     const userId = req.params.userId;
     const userCollection = await mongoose.connection.collection("users");
-    const userItems = await userCollection.findOne({ _id: new mongoose.Types.ObjectId(userId)});
+    const userItems = await userCollection.findOne({ _id: new mongoose.Types.ObjectId(userId) });
     if (userItems) {
         res.json(userItems);
     }
@@ -193,6 +224,77 @@ app.post("/user/:userId",async(req,res) => {
         res.json("No data found");
     }
 })
+
+
+app.post("/trainer/:trainerId",async (req,res) => {
+    const trainerId = req.params.trainerId;
+    var courseData;
+    var registerArray = [];
+    const trainerData = await Trainer.findOne({_id: new mongoose.Types.ObjectId(trainerId)});
+    const cartData = trainerData.course;
+       
+        for (let i = 0; i < cartData.length; i++) {
+            try {
+                const courseCollection = await mongoose.connection.collection("courses");
+                let courseId = cartData[i];
+                courseId = parseInt(courseId, 10);
+                const courseData = await courseCollection.findOne({ id: courseId });
+                registerArray.push(courseData);
+            } catch (error) {
+                console.error("Error fetching course data:", error.message);
+            }
+        }
+        res.json(registerArray);
+})
+
+
+app.post("/newcourse",async(req,res) => {
+    try {
+        const newCourseData = req.body;
+        const trainer_id = newCourseData.trainerId;
+        const courseId = await getNextCourseSequenceValue("course_id");
+        const newcourse = new Courses({
+            id: "course" +courseId,
+            name: newCourseData.course_name,
+            tittle: newCourseData.title,
+            description: newCourseData.description,
+            duration: newCourseData.duration,
+        });
+        await newcourse.save();
+        const foundItems = await Trainer.findOne({_id:new mongoose.Types.ObjectId(trainer_id)});
+        await foundItems.updateOne({ $push: { course:courseId } });
+    }
+    catch (error) {
+        console.log(error);
+    }
+})
+
+app.post("/delete/:courseID", async (req, res) => {
+    try {
+      const courseId = req.params.courseID;
+      const sentData = req.body;
+      const trainerId = sentData.trainerId;
+  
+      // Use findOneAndUpdate to remove the course from the array
+      const updatedTrainer = await Trainer.findOneAndUpdate(
+        { _id: new mongoose.Types.ObjectId(trainerId) },
+        { $pull: { course: courseId } },
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedTrainer) {
+        // Handle the case where the trainer is not found
+        return res.status(404).json({ message: 'Trainer not found' });
+      }
+  
+      console.log(`Course ${courseId} removed from trainer ${trainerId}`);
+      res.status(200).json({ message: 'Course removed successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
+
 
 const main = async () => {
     try {
@@ -218,6 +320,16 @@ async function getNextuserSequenceValue(collectionName) {
 
 async function getNexttrainerSequenceValue(collectionName) {
     const sequenceDocument = await TrainerSequence.findOneAndUpdate(
+        { _id: collectionName },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+
+    return sequenceDocument.seq;
+}
+
+async function getNextCourseSequenceValue(collectionName) {
+    const sequenceDocument = await CourseSequence.findOneAndUpdate(
         { _id: collectionName },
         { $inc: { seq: 1 } },
         { new: true, upsert: true }
